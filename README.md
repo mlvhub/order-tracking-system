@@ -6,20 +6,23 @@ A "dummy" order tracking system built with Scala, ZIO, Kafka and Postgres.
 
 TODO: add architecture diagram
 
-## Features
+## Roadmap
 
-- [ ] Misc
-  - [ ] DB migrations
-  - [ ] CI/CD
 - [x] Users
   - [x] Create user
   - [x] Get user by id
   - [x] Get user by email
   - [ ] HTMX UI
-- [ ] Auth
-  - [ ] Login
-  - [ ] Get user by id
-  - [ ] Get user by email
+- [x] Auth
+  - [x] Login
+  - [ ] Protect routes
+- [ ] Misc
+  - [ ] DB migrations
+  - [ ] Prometheus/Grafana
+  - [ ] Swagger/OpenAPI
+- [ ] Testing
+  - [ ] Unit tests
+  - [ ] Integration tests
 - [ ] Orders
   - [ ] Order generator service
   - [ ] Order validator service

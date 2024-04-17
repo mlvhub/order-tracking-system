@@ -11,7 +11,7 @@ import zio.metrics.connectors.{MetricsConfig, prometheus}
 import zio.metrics.connectors.{MetricsConfig, prometheus}
 import zio.metrics.jvm.DefaultJvmMetrics
 
-import ordertrackerweb.metrics.MetricsEndpoint
+import ordertrackerweb.metrics.MetricsEndpoints
 import ordertrackerweb.users.PostgresUserRepo
 import ordertrackerweb.users.UserService
 import ordertrackerweb.users.UserEndpoints
@@ -19,20 +19,12 @@ import ordertrackerweb.uuid.UUIDService
 import ordertrackerweb.endpoints.BaseEndpoints
 import ordertrackerweb.db.Db
 import ordertrackerweb.config.Configuration
+import ordertrackerweb.auth.HashService
+import ordertrackerweb.auth.AuthEndpoints
 import ordertrackerweb.auth.AuthService
+import ordertrackerweb.auth.TokenService
 
 object MainApp extends ZIOAppDefault {
-
-  def countCharacters(s: String): ZIO[Any, Nothing, Int] =
-    ZIO.succeed(s.length)
-
-  val countCharactersEndpoint: PublicEndpoint[String, Unit, Int, Any] =
-    endpoint.get.in("count").in(stringBody).out(plainBody[Int])
-
-  val countCharactersHttp: HttpApp[Any] =
-    ZioHttpInterpreter().toHttp(
-      countCharactersEndpoint.zServerLogic(countCharacters)
-    )
 
   val httpServer = for {
     endpoints <- ZIO.service[Endpoints]
@@ -43,28 +35,33 @@ object MainApp extends ZIOAppDefault {
     _ <- ZIO.never
   } yield ()
 
-  override def run = httpServer
-    .provide(
-      // ZIO Http default server layer, default port: 8080
-      Server.default,
-      // The prometheus reporting layer
-      prometheus.prometheusLayer,
-      prometheus.publisherLayer,
-      // Interval for polling metrics
-      ZLayer.succeed(MetricsConfig(5.seconds)),
-      // Default JVM Metrics
-      DefaultJvmMetrics.live.unit,
-      // App layers
-      Configuration.live,
-      Db.dataSourceLive,
-      Db.quillLive,
-      UUIDService.live,
-      AuthService.live,
-      BaseEndpoints.live,
-      MetricsEndpoint.live,
-      PostgresUserRepo.live,
-      UserService.live,
-      UserEndpoints.live,
-      Endpoints.live
-    )
+  override def run: ZIO[Environment & ZIOAppArgs & Scope, Any, Any] =
+    httpServer
+      .provide(
+        // ZIO Http default server layer, default port: 8080
+        Server.default,
+        // The prometheus reporting layer
+        prometheus.prometheusLayer,
+        prometheus.publisherLayer,
+        // Interval for polling metrics
+        ZLayer.succeed(MetricsConfig(5.seconds)),
+        // Default JVM Metrics
+        DefaultJvmMetrics.live.unit,
+        ZLayer.succeed(Clock.ClockLive),
+        // App layers
+        Configuration.live,
+        Db.dataSourceLive,
+        Db.quillLive,
+        UUIDService.live,
+        BaseEndpoints.live,
+        MetricsEndpoints.live,
+        PostgresUserRepo.live,
+        UserService.live,
+        UserEndpoints.live,
+        HashService.live,
+        TokenService.live,
+        AuthService.live,
+        AuthEndpoints.live,
+        Endpoints.live
+      )
 }

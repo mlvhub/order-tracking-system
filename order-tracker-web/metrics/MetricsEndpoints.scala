@@ -11,23 +11,23 @@ import sttp.model.StatusCode
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import ordertrackerweb.endpoints.BaseEndpoints
 
-class MetricsEndpoint(
-  baseEndpoints: BaseEndpoints,
-  prometheusPublisher: PrometheusPublisher
+class MetricsEndpoints(
+    baseEndpoints: BaseEndpoints,
+    prometheusPublisher: PrometheusPublisher
 ):
 
-  val endpoint: ZServerEndpoint[Any, Any] =
-    baseEndpoints.publicEndpoint
-    .get
-    .in("metrics")
-    .out(stringBody)
-    .zServerLogic(_ => prometheusPublisher.get)
+  private val endpoint: ZServerEndpoint[Any, Any] =
+    baseEndpoints.publicEndpoint.get
+      .in("metrics")
+      .out(stringBody)
+      .zServerLogic(_ => prometheusPublisher.get)
 
+  val endpoints: List[ZServerEndpoint[Any, Any]] = List(endpoint)
 
-object MetricsEndpoint:
+object MetricsEndpoints:
   val live: ZLayer[
     PrometheusPublisher & BaseEndpoints,
     Nothing,
-    MetricsEndpoint
+    MetricsEndpoints
   ] =
-    ZLayer.fromFunction(MetricsEndpoint(_, _))
+    ZLayer.fromFunction(MetricsEndpoints(_, _))
