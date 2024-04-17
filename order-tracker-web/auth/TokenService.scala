@@ -12,9 +12,11 @@ import com.auth0.jwt.interfaces.DecodedJWT
 import ordertrackerweb.config.AppConfig
 import ordertrackerweb.errors.AppError
 import ordertrackerweb.users.UserRepo
+import ordertrackerweb.users.PrivateUser
 
 trait TokenService:
   def createToken(email: String): Task[String]
+  def extractUser(token: String): Task[Option[PrivateUser]]
   def verifyToken(token: String): Task[Boolean]
 
 class TokenServiceImpl(config: AppConfig, clock: Clock, userRepo: UserRepo)
@@ -44,14 +46,17 @@ class TokenServiceImpl(config: AppConfig, clock: Clock, userRepo: UserRepo)
       )
     } yield res
 
-  override def verifyToken(token: String): Task[Boolean] = Try(
+  override def extractUser(token: String): Task[Option[PrivateUser]] = Try(
     verifier.verify(token)
   ) match {
     case Success(decodedJwt: DecodedJWT) =>
       val email = decodedJwt.getClaim(ClaimName).asString()
-      userRepo.byEmail(email).map(_.isDefined)
-    case _ => ZIO.succeed(false)
+      userRepo.byEmail(email)
+    case _ => ZIO.succeed(None)
   }
+
+  override def verifyToken(token: String): Task[Boolean] =
+    extractUser(token).map(_.isDefined)
 
 object TokenService:
   val live: ZLayer[AppConfig & Clock & UserRepo, Nothing, TokenService] =

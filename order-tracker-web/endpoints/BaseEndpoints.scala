@@ -9,14 +9,39 @@ import zio.{IO, Task, ZIO, ZLayer}
 
 import ordertrackerweb.errors.AppError
 import ordertrackerweb.errors.AppError.*
+import ordertrackerweb.auth.TokenService
+import ordertrackerweb.users.PrivateUser
 
-class BaseEndpoints():
+class BaseEndpoints(tokenService: TokenService):
   val publicEndpoint: PublicEndpoint[Unit, AppError, Unit, Any] = endpoint
     .errorOut(BaseEndpoints.defaultErrorOutputs)
 
+  private def handleAuth(token: String): ZIO[Any, AppError, PrivateUser] =
+    tokenService
+      .extractUser(token)
+      .mapError(e => InternalServerError(e.getMessage))
+      .flatMap {
+        case Some(user) => ZIO.succeed(user)
+        case None       => ZIO.fail(Unauthorized("Invalid token"))
+      }
+
+  val secureEndpoint: ZPartialServerEndpoint[
+    Any,
+    String,
+    PrivateUser,
+    Unit,
+    AppError,
+    Unit,
+    Any
+  ] = endpoint
+    .errorOut(BaseEndpoints.defaultErrorOutputs)
+    .securityIn(auth.bearer[String]())
+    .zServerSecurityLogic(handleAuth)
+
 object BaseEndpoints:
 
-  val live: ZLayer[Any, Nothing, BaseEndpoints] = ZLayer.succeed(new BaseEndpoints())
+  val live: ZLayer[TokenService, Nothing, BaseEndpoints] =
+    ZLayer.fromFunction(new BaseEndpoints(_))
 
   private val defaultErrorOutputs: EndpointOutput.OneOf[AppError, AppError] =
     oneOf[AppError](
