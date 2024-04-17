@@ -8,18 +8,21 @@ TODO: add architecture diagram
 
 ## Roadmap
 
-- [x] Users
+- [x] Users initial operations
   - [x] Create user
   - [x] Get user by id
   - [x] Get user by email
-  - [ ] HTMX UI
 - [x] Auth
   - [x] Login
   - [x] Protect routes
 - [ ] Misc
-  - [ ] DB migrations
   - [ ] Prometheus/Grafana
   - [ ] Swagger/OpenAPI
+  - [ ] DB migrations
+- [ ] HTMX UI - Users
+  - [ ] User Register
+  - [ ] User Login
+  - [ ] User Profile
 - [ ] Testing
   - [ ] Unit tests
   - [ ] Integration tests
@@ -30,3 +33,7 @@ TODO: add architecture diagram
   - [ ] Get order by id
   - [ ] Get all orders
   - [ ] Search orders
+- [ ] HTMX UI - Orders
+  - [ ] Order list
+  - [ ] Order search
+
