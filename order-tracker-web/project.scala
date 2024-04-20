@@ -16,3 +16,7 @@
 //> using dep "io.getquill::quill-jdbc-zio::4.8.3"
 //> using dep "org.postgresql:postgresql:42.7.3"
 //> using dep "com.zaxxer:HikariCP:5.1.0"
+//> using dep "org.flywaydb:flyway-core:10.11.1"
+//> using dep "org.flywaydb:flyway-database-postgresql:10.11.1"
+
+//> using resourceDir resources

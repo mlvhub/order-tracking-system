@@ -22,10 +22,13 @@ import ordertrackerweb.auth.HashService
 import ordertrackerweb.auth.AuthEndpoints
 import ordertrackerweb.auth.AuthService
 import ordertrackerweb.auth.TokenService
+import ordertrackerweb.db.Migrator
 
 object MainApp extends ZIOAppDefault {
 
   val httpServer = for {
+    migrator <- ZIO.service[Migrator]
+    _ <- migrator.migrate()
     endpoints <- ZIO.service[Endpoints]
     _ <- ZIO.logInfo(s"endpoints: ${endpoints.endpoints}")
     httpApp = ZioHttpInterpreter(endpoints.options).toHttp(endpoints.endpoints)
@@ -51,6 +54,7 @@ object MainApp extends ZIOAppDefault {
         Configuration.live,
         Db.dataSourceLive,
         Db.quillLive,
+        Migrator.live,
         UUIDService.live,
         BaseEndpoints.live,
         MetricsEndpoints.live,

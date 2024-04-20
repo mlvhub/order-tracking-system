@@ -15,10 +15,10 @@ TODO: add architecture diagram
 - [x] Auth
   - [x] Login
   - [x] Protect routes
-- [ ] Misc
+- [x] Misc
   - [x] Prometheus/Grafana
   - [x] Swagger/OpenAPI
-  - [ ] DB migrations
+  - [x] DB migrations
 - [ ] HTMX UI - Users
   - [ ] User Register
   - [ ] User Login
