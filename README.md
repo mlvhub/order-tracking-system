@@ -16,7 +16,7 @@ TODO: add architecture diagram
   - [x] Login
   - [x] Protect routes
 - [ ] Misc
-  - [ ] Prometheus/Grafana
+  - [x] Prometheus/Grafana
   - [ ] Swagger/OpenAPI
   - [ ] DB migrations
 - [ ] HTMX UI - Users
