@@ -8,7 +8,6 @@ import zio.*
 import zio.metrics.*
 import zio.metrics.connectors.prometheus.PrometheusPublisher
 import zio.metrics.connectors.{MetricsConfig, prometheus}
-import zio.metrics.connectors.{MetricsConfig, prometheus}
 import zio.metrics.jvm.DefaultJvmMetrics
 
 import ordertrackerweb.metrics.MetricsEndpoints
@@ -29,7 +28,7 @@ object MainApp extends ZIOAppDefault {
   val httpServer = for {
     endpoints <- ZIO.service[Endpoints]
     _ <- ZIO.logInfo(s"endpoints: ${endpoints.endpoints}")
-    httpApp = ZioHttpInterpreter().toHttp(endpoints.endpoints)
+    httpApp = ZioHttpInterpreter(endpoints.options).toHttp(endpoints.endpoints)
     _ <- ZIO.logInfo("Starting server on port 8080")
     _ <- Server.install(httpApp)
     _ <- ZIO.never

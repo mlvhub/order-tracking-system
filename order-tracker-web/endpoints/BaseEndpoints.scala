@@ -13,8 +13,9 @@ import ordertrackerweb.auth.TokenService
 import ordertrackerweb.users.PrivateUser
 
 class BaseEndpoints(tokenService: TokenService):
-  val publicEndpoint: PublicEndpoint[Unit, AppError, Unit, Any] = endpoint
-    .errorOut(BaseEndpoints.defaultErrorOutputs)
+  val publicEndpoint: PublicEndpoint[Unit, AppError, Unit, Any] =
+    endpoint
+      .errorOut(BaseEndpoints.defaultErrorOutputs)
 
   private def handleAuth(token: String): ZIO[Any, AppError, PrivateUser] =
     tokenService
@@ -33,10 +34,11 @@ class BaseEndpoints(tokenService: TokenService):
     AppError,
     Unit,
     Any
-  ] = endpoint
-    .errorOut(BaseEndpoints.defaultErrorOutputs)
-    .securityIn(auth.bearer[String]())
-    .zServerSecurityLogic(handleAuth)
+  ] =
+    endpoint
+      .errorOut(BaseEndpoints.defaultErrorOutputs)
+      .securityIn(auth.bearer[String]())
+      .zServerSecurityLogic(handleAuth)
 
 object BaseEndpoints:
 

@@ -3,6 +3,7 @@ package ordertrackerweb
 import zio.*
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.ztapir.ZServerEndpoint
+import sttp.tapir.server.ziohttp.ZioHttpServerOptions
 
 import ordertrackerweb.users.UserEndpoints
 import ordertrackerweb.endpoints.BaseEndpoints
@@ -21,6 +22,11 @@ class Endpoints(
     apiEndpoints ++ metricsEndpoint.endpoints
   // private def docsEndpoints(apiEndpoints: List[ZServerEndpoint[Any, Any]]): List[ZServerEndpoint[Any, Any]] =
   // SwaggerInterpreter().fromServerEndpoints[Task](apiEndpoints, "order-tracking-system", "0.0.1")
+
+  val options: ZioHttpServerOptions[Any] =
+    ZioHttpServerOptions.customiseInterceptors
+      .metricsInterceptor(metricsEndpoint.metricsInterceptor)
+      .options
 
 object Endpoints:
   val live: ZLayer[
