@@ -26,14 +26,23 @@ TODO: add architecture diagram
 - [ ] Testing
   - [ ] Unit tests
   - [ ] Integration tests
-- [ ] Orders
-  - [ ] Order generator service
-  - [ ] Order validator service
-  - [ ] Order ingestor service
-  - [ ] Get order by id
-  - [ ] Get all orders
-  - [ ] Search orders
+- [ ] Order generator service
+  - [ ] Add Kafka to Docker Compose
+  - [ ] Create Kafka topics
+  - [ ] Order generator
+  - [ ] Publish orders to Kafka
+  - [ ] Custom metrics for observability (publish success rate, publish error rate)
+- [ ] Order validator service
+  - [ ] Consume orders from Kafka
+  - [ ] Validate order
+  - [ ] Publish to Kafka
+  - [ ] Custom metrics for observability (consume success rate, consume error rate, validate success rate, validate error rate, publish success rate, publish error rate)
+- [ ] Order ingestor service
+  - [ ] Consume orders from Kafka
+  - [ ] Store order in Postgres
+  - [ ] Custom metrics for observability (consume success rate, consume error rate, store success rate, store error rate)
 - [ ] HTMX UI - Orders
   - [ ] Order list
+  - [ ] Order detail
   - [ ] Order search
 
