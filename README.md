@@ -8,10 +8,12 @@ TODO: add architecture diagram
 
 ## Roadmap
 
-- [x] Users initial operations
+<details>
+  <summary>- [x] Users initial operations</summary>
   - [x] Create user
   - [x] Get user by id
   - [x] Get user by email
+</details>
 - [x] Auth
   - [x] Login
   - [x] Protect routes
