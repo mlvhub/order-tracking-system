@@ -15,8 +15,11 @@ class Endpoints(
     userEndpoints: UserEndpoints,
     authEndpoints: AuthEndpoints
 ):
+  private val uiEndpoints =
+    userEndpoints.uiEndpoints ++ authEndpoints.uiEndpoints
+
   private val apiEndpoints =
-    userEndpoints.endpoints ++ authEndpoints.endpoints
+    userEndpoints.apiEndpoints ++ authEndpoints.apiEndpoints
 
   private def docsEndpoints(
       apiEndpoints: List[ZServerEndpoint[Any, Any]]
@@ -25,7 +28,9 @@ class Endpoints(
       .fromServerEndpoints[Task](apiEndpoints, "order-tracking-system", "0.0.1")
 
   val endpoints: List[ZServerEndpoint[Any, Any]] =
-    apiEndpoints ++ metricsEndpoint.endpoints ++ docsEndpoints(apiEndpoints)
+    apiEndpoints ++ uiEndpoints ++ metricsEndpoint.endpoints ++ docsEndpoints(
+      apiEndpoints
+    )
 
   val options: ZioHttpServerOptions[Any] =
     ZioHttpServerOptions.customiseInterceptors

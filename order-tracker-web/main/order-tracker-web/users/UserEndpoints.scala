@@ -8,12 +8,41 @@ import sttp.tapir.json.zio.*
 import sttp.tapir.ztapir.*
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import zio.http.{endpoint => zendpoint, *}
+import sttp.model.HeaderNames
 
 import ordertrackerweb.endpoints.BaseEndpoints
 import ordertrackerweb.errors.AppError.*
+import ordertrackerweb.users.templates.*
 
 class UserEndpoints(baseEndpoints: BaseEndpoints, userService: UserService):
-  val createUserEndpoint: ZServerEndpoint[Any, Any] =
+  // TODO: allow admins to query for anyone
+  private val profilePageUiEndpoint: ZServerEndpoint[Any, Any] =
+    baseEndpoints.secureEndpoint.get
+      .in("profile")
+      .out(stringBody)
+      .out(header(HeaderNames.ContentType, "text/html"))
+      .serverLogic(user =>
+        _ => ZIO.succeed(Profile(user.toPublic).encode.toString)
+      )
+
+  private val registerPageUiEndpoint: ZServerEndpoint[Any, Any] =
+    baseEndpoints.publicEndpoint.get
+      .in("register")
+      .out(stringBody)
+      .out(header(HeaderNames.ContentType, "text/html"))
+      .zServerLogic(_ => ZIO.succeed(Register().encode.toString))
+
+  private val createUserUiEndpoint: ZServerEndpoint[Any, Any] =
+    baseEndpoints.publicEndpoint.post
+      .in("users")
+      .in(formBody[CreateUserForm])
+      .out(header("HX-Redirect", "/login"))
+      .zServerLogic(userService.save(_).map(_.toPublic).mapError())
+
+  val uiEndpoints: List[ZServerEndpoint[Any, Any]] =
+    List(profilePageUiEndpoint, registerPageUiEndpoint, createUserUiEndpoint)
+
+  private val createUserApiEndpoint: ZServerEndpoint[Any, Any] =
     baseEndpoints.publicEndpoint.post
       .in("api" / "users")
       .in(jsonBody[CreateUserForm])
@@ -21,7 +50,7 @@ class UserEndpoints(baseEndpoints: BaseEndpoints, userService: UserService):
       .zServerLogic(userService.save(_).map(_.toPublic))
 
   // TODO: allow admins to query for anyone
-  val byIdEndpoint: ZServerEndpoint[Any, Any] =
+  private val byIdApiEndpoint: ZServerEndpoint[Any, Any] =
     baseEndpoints.secureEndpoint.get
       .in("api" / "users" / path[UUID])
       .out(jsonBody[PublicUser])
@@ -33,7 +62,7 @@ class UserEndpoints(baseEndpoints: BaseEndpoints, userService: UserService):
       )
 
   // TODO: allow admins to query for anyone
-  val byEmailEndpoint: ZServerEndpoint[Any, Any] =
+  private val byEmailApiEndpoint: ZServerEndpoint[Any, Any] =
     baseEndpoints.secureEndpoint.get
       .in("api" / "users" / "email" / path[String])
       .out(jsonBody[PublicUser])
@@ -45,10 +74,9 @@ class UserEndpoints(baseEndpoints: BaseEndpoints, userService: UserService):
         }
       )
 
-  val endpoints: List[ZServerEndpoint[Any, Any]] =
-    List(createUserEndpoint, byIdEndpoint, byEmailEndpoint)
+  val apiEndpoints: List[ZServerEndpoint[Any, Any]] =
+    List(createUserApiEndpoint, byIdApiEndpoint, byEmailApiEndpoint)
 
-object UserEndpoints {
+object UserEndpoints:
   val live: ZLayer[BaseEndpoints & UserService, Nothing, UserEndpoints] =
     ZLayer.fromFunction(new UserEndpoints(_, _))
-}
