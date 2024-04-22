@@ -9,18 +9,31 @@ TODO: add architecture diagram
 ## Roadmap
 
 <details>
-  <summary>- [x] Users initial operations</summary>
+  <summary>Users</summary>
+
+- [x] Users initial operations
   - [x] Create user
   - [x] Get user by id
   - [x] Get user by email
 </details>
+
+<details>
+  <summary>Auth</summary>
+
 - [x] Auth
   - [x] Login
   - [x] Protect routes
+</details>
+
+<details>
+  <summary>Misc</summary>
+
 - [x] Misc
   - [x] Prometheus/Grafana
   - [x] Swagger/OpenAPI
   - [x] DB migrations
+</details>
+
 - [ ] HTMX UI - Users
   - [ ] User Register
   - [ ] User Login
