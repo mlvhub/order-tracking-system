@@ -4,20 +4,30 @@ import zio.http.template._
 
 import ordertrackerweb.templates.Layout
 import ordertrackerweb.templates.CustomDom.*
+import ordertrackerweb.users.CreateUserForm
 
 object Register:
 
-  def apply(errors: List[String] = List.empty): Html =
+  def apply(
+      userForm: Option[CreateUserForm] = None,
+      errors: List[String] = List.empty
+  ): Html =
     Layout(
       div(
+        id := "register-page",
         h1("Register"),
-        ul(errors.map(li(_))),
+        errorList(errors),
         form(
           Dom.attr("hx-post", "/users"),
+          Dom.attr("hx-target", "#register-page"),
+          Dom.attr("hx-swap", "outerHtml"),
           classAttr := "mt-2 inline-flex flex-col space-y-2",
-          inputFor("name"),
-          inputFor("email", "email"),
-          inputFor("password", "password"),
+          inputFor("name", defaultValue = userForm.map(_.name)),
+          inputFor("email", "email", defaultValue = userForm.map(_.email)),
+          inputFor(
+            "password",
+            "password"
+          ),
           inputFor(
             "passwordConfirmation",
             "password",

@@ -12,15 +12,19 @@ import zio.metrics.jvm.DefaultJvmMetrics
 
 import ordertrackerweb.metrics.MetricsEndpoints
 import ordertrackerweb.users.PostgresUserRepo
-import ordertrackerweb.users.UserService
-import ordertrackerweb.users.UserEndpoints
+import ordertrackerweb.users.api.UserApiService
+import ordertrackerweb.users.api.UserApiEndpoints
+import ordertrackerweb.users.htmx.UserService
+import ordertrackerweb.users.htmx.UserEndpoints
 import ordertrackerweb.uuid.UUIDService
 import ordertrackerweb.endpoints.BaseEndpoints
 import ordertrackerweb.db.Db
 import ordertrackerweb.config.Configuration
 import ordertrackerweb.auth.HashService
-import ordertrackerweb.auth.AuthEndpoints
-import ordertrackerweb.auth.AuthService
+import ordertrackerweb.auth.api.AuthApiEndpoints
+import ordertrackerweb.auth.api.AuthApiService
+import ordertrackerweb.auth.htmx.AuthEndpoints
+import ordertrackerweb.auth.htmx.AuthService
 import ordertrackerweb.auth.TokenService
 import ordertrackerweb.db.Migrator
 
@@ -61,10 +65,14 @@ object MainApp extends ZIOAppDefault {
         PostgresUserRepo.live,
         UserService.live,
         UserEndpoints.live,
+        UserApiService.live,
+        UserApiEndpoints.live,
         HashService.live,
         TokenService.live,
         AuthService.live,
         AuthEndpoints.live,
+        AuthApiService.live,
+        AuthApiEndpoints.live,
         Endpoints.live
       )
 }

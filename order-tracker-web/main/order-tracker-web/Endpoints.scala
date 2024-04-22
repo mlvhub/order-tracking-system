@@ -5,21 +5,25 @@ import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.ztapir.ZServerEndpoint
 import sttp.tapir.server.ziohttp.ZioHttpServerOptions
 
-import ordertrackerweb.users.UserEndpoints
 import ordertrackerweb.endpoints.BaseEndpoints
 import ordertrackerweb.metrics.MetricsEndpoints
-import ordertrackerweb.auth.AuthEndpoints
+import ordertrackerweb.auth.api.AuthApiEndpoints
+import ordertrackerweb.users.api.UserApiEndpoints
+import ordertrackerweb.users.htmx.UserEndpoints
+import ordertrackerweb.auth.htmx.AuthEndpoints
 
 class Endpoints(
     metricsEndpoint: MetricsEndpoints,
     userEndpoints: UserEndpoints,
-    authEndpoints: AuthEndpoints
+    authEndpoints: AuthEndpoints,
+    userApiEndpoints: UserApiEndpoints,
+    authApiEndpoints: AuthApiEndpoints
 ):
   private val uiEndpoints =
-    userEndpoints.uiEndpoints ++ authEndpoints.uiEndpoints
+    userEndpoints.endpoints ++ authEndpoints.endpoints
 
   private val apiEndpoints =
-    userEndpoints.apiEndpoints ++ authEndpoints.apiEndpoints
+    userApiEndpoints.endpoints ++ authApiEndpoints.endpoints
 
   private def docsEndpoints(
       apiEndpoints: List[ZServerEndpoint[Any, Any]]
@@ -39,8 +43,9 @@ class Endpoints(
 
 object Endpoints:
   val live: ZLayer[
-    UserEndpoints & MetricsEndpoints & AuthEndpoints,
+    UserEndpoints & MetricsEndpoints & AuthEndpoints & UserApiEndpoints &
+      AuthApiEndpoints,
     Nothing,
     Endpoints
   ] =
-    ZLayer.fromFunction(new Endpoints(_, _, _))
+    ZLayer.fromFunction(new Endpoints(_, _, _, _, _))

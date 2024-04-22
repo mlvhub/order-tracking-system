@@ -1,4 +1,4 @@
-package ordertrackerweb.auth
+package ordertrackerweb.auth.htmx
 
 import zio.*
 import sttp.tapir.generic.auto.*
@@ -11,7 +11,6 @@ import sttp.model.HeaderNames
 import ordertrackerweb.endpoints.BaseEndpoints
 import ordertrackerweb.errors.AppError
 import ordertrackerweb.auth.models.{LoginRequest, LoginResponse}
-import ordertrackerweb.users.UserService
 import ordertrackerweb.auth.templates.*
 
 class AuthEndpoints(
@@ -26,7 +25,7 @@ class AuthEndpoints(
       .out(header(HeaderNames.ContentType, "text/html"))
       .zServerLogic(_ => ZIO.succeed(Login().encode.toString))
 
-  // TODO: set cookie in htmx
+  // TODO: implement cookie-based auth
   private val userLoginUiEndpoint: ZServerEndpoint[Any, Any] =
     baseEndpoints.publicEndpoint.post
       .in("auth" / "login")
@@ -40,25 +39,11 @@ class AuthEndpoints(
           .map { case (token, _) =>
             token
           }
+          .catchAll(e => ZIO.succeed(Login(e).encode.toString))
       }
 
-  val uiEndpoints: List[ZServerEndpoint[Any, Any]] =
+  val endpoints: List[ZServerEndpoint[Any, Any]] =
     List(loginPageUiEndpoint, userLoginUiEndpoint)
-
-  private val loginApiEndpoint: ZServerEndpoint[Any, Any] =
-    baseEndpoints.publicEndpoint.post
-      .in("api" / "auth" / "login")
-      .in(jsonBody[LoginRequest])
-      .out(jsonBody[LoginResponse])
-      .zServerLogic { case LoginRequest(email, password) =>
-        authService
-          .login(email, password)
-          .map { case (token, user) =>
-            LoginResponse(token, user)
-          }
-      }
-
-  val apiEndpoints: List[ZServerEndpoint[Any, Any]] = List(loginApiEndpoint)
 
 object AuthEndpoints:
   val live: ZLayer[

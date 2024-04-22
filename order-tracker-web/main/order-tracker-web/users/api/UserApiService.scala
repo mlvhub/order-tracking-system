@@ -1,4 +1,4 @@
-package ordertrackerweb.users
+package ordertrackerweb.users.api
 
 import java.util.UUID
 
@@ -8,17 +8,19 @@ import ordertrackerweb.uuid.UUIDService
 import ordertrackerweb.errors.AppError
 import ordertrackerweb.auth.HashService
 
-trait UserService {
+import ordertrackerweb.users.*
+
+trait UserApiService {
   def save(user: CreateUserForm): ZIO[Any, AppError, PrivateUser]
   def byEmail(email: String): ZIO[Any, AppError, PrivateUser]
   def byId(id: UUID): ZIO[Any, AppError, PrivateUser]
 }
 
-class UserServiceImpl(
+class UserApiServiceImpl(
     userRepo: UserRepo,
     uuidService: UUIDService,
     hashService: HashService
-) extends UserService {
+) extends UserApiService {
   def save(createUser: CreateUserForm): ZIO[Any, AppError, PrivateUser] =
     for {
       _ <- CreateUserForm
@@ -54,7 +56,8 @@ class UserServiceImpl(
       }
 }
 
-object UserService {
-  val live: ZLayer[UserRepo & UUIDService & HashService, Nothing, UserService] =
-    ZLayer.fromFunction(new UserServiceImpl(_, _, _))
+object UserApiService {
+  val live
+      : ZLayer[UserRepo & UUIDService & HashService, Nothing, UserApiService] =
+    ZLayer.fromFunction(new UserApiServiceImpl(_, _, _))
 }

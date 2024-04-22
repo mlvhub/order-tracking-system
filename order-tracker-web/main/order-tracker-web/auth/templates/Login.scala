@@ -11,7 +11,7 @@ object Login:
     Layout(
       div(
         h1("Login"),
-        ul(errors.map(li(_))),
+        errorList(errors),
         form(
           Dom.attr("hx-post", "/auth/login"),
           classAttr := "mt-2 inline-flex flex-col space-y-2",

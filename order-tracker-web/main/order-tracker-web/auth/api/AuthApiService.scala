@@ -1,24 +1,25 @@
-package ordertrackerweb.auth
+package ordertrackerweb.auth.api
 
 import zio.*
 import at.favre.lib.crypto.bcrypt.BCrypt
 import ordertrackerweb.users.PublicUser
-import ordertrackerweb.users.UserService
+import ordertrackerweb.users.api.UserApiService
 import ordertrackerweb.errors.AppError
 import java.util.concurrent.Flow.Publisher
 import ordertrackerweb.errors.AppError.Unauthorized
+import ordertrackerweb.auth.*
 
-trait AuthService:
+trait AuthApiService:
   def login(
       email: String,
       password: String
   ): ZIO[Any, AppError, (String, PublicUser)]
 
-class AuthServiceImpl(
+class AuthApiServiceImpl(
     hashService: HashService,
     tokenService: TokenService,
-    userService: UserService
-) extends AuthService:
+    userService: UserApiService
+) extends AuthApiService:
 
   private val unauthorized: AppError =
     AppError.Unauthorized("Invalid email or password")
@@ -45,7 +46,10 @@ class AuthServiceImpl(
         .mapError(e => AppError.InternalServerError(e.getMessage))
     } yield (token, user.toPublic)
 
-object AuthService:
-  val live
-      : ZLayer[HashService & TokenService & UserService, Nothing, AuthService] =
-    ZLayer.fromFunction(new AuthServiceImpl(_, _, _))
+object AuthApiService:
+  val live: ZLayer[
+    HashService & TokenService & UserApiService,
+    Nothing,
+    AuthApiService
+  ] =
+    ZLayer.fromFunction(new AuthApiServiceImpl(_, _, _))

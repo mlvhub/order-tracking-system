@@ -1,4 +1,4 @@
-package ordertrackerweb.users
+package ordertrackerweb.users.api
 
 import java.util.UUID
 
@@ -13,35 +13,12 @@ import sttp.model.HeaderNames
 import ordertrackerweb.endpoints.BaseEndpoints
 import ordertrackerweb.errors.AppError.*
 import ordertrackerweb.users.templates.*
+import ordertrackerweb.users.*
 
-class UserEndpoints(baseEndpoints: BaseEndpoints, userService: UserService):
-  // TODO: allow admins to query for anyone
-  private val profilePageUiEndpoint: ZServerEndpoint[Any, Any] =
-    baseEndpoints.secureEndpoint.get
-      .in("profile")
-      .out(stringBody)
-      .out(header(HeaderNames.ContentType, "text/html"))
-      .serverLogic(user =>
-        _ => ZIO.succeed(Profile(user.toPublic).encode.toString)
-      )
-
-  private val registerPageUiEndpoint: ZServerEndpoint[Any, Any] =
-    baseEndpoints.publicEndpoint.get
-      .in("register")
-      .out(stringBody)
-      .out(header(HeaderNames.ContentType, "text/html"))
-      .zServerLogic(_ => ZIO.succeed(Register().encode.toString))
-
-  private val createUserUiEndpoint: ZServerEndpoint[Any, Any] =
-    baseEndpoints.publicEndpoint.post
-      .in("users")
-      .in(formBody[CreateUserForm])
-      .out(header("HX-Redirect", "/login"))
-      .zServerLogic(userService.save(_).map(_.toPublic).mapError())
-
-  val uiEndpoints: List[ZServerEndpoint[Any, Any]] =
-    List(profilePageUiEndpoint, registerPageUiEndpoint, createUserUiEndpoint)
-
+class UserApiEndpoints(
+    baseEndpoints: BaseEndpoints,
+    userService: UserApiService
+):
   private val createUserApiEndpoint: ZServerEndpoint[Any, Any] =
     baseEndpoints.publicEndpoint.post
       .in("api" / "users")
@@ -74,9 +51,9 @@ class UserEndpoints(baseEndpoints: BaseEndpoints, userService: UserService):
         }
       )
 
-  val apiEndpoints: List[ZServerEndpoint[Any, Any]] =
+  val endpoints: List[ZServerEndpoint[Any, Any]] =
     List(createUserApiEndpoint, byIdApiEndpoint, byEmailApiEndpoint)
 
-object UserEndpoints:
-  val live: ZLayer[BaseEndpoints & UserService, Nothing, UserEndpoints] =
-    ZLayer.fromFunction(new UserEndpoints(_, _))
+object UserApiEndpoints:
+  val live: ZLayer[BaseEndpoints & UserApiService, Nothing, UserApiEndpoints] =
+    ZLayer.fromFunction(new UserApiEndpoints(_, _))

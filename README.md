@@ -35,7 +35,9 @@ TODO: add architecture diagram
 </details>
 
 - [ ] HTMX UI - Users
-  - [ ] User Register
+  - [x] User Register
+  - [ ] Navigation
+  - [ ] Cookie-based auth
   - [ ] User Login
   - [ ] User Profile
 - [ ] Testing
