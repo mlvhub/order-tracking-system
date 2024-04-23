@@ -4,24 +4,19 @@ import zio.*
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.ztapir.ZServerEndpoint
 import sttp.tapir.server.ziohttp.ZioHttpServerOptions
+import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 
 import ordertrackerweb.endpoints.BaseEndpoints
 import ordertrackerweb.metrics.MetricsEndpoints
 import ordertrackerweb.auth.api.AuthApiEndpoints
 import ordertrackerweb.users.api.UserApiEndpoints
-import ordertrackerweb.users.htmx.UserEndpoints
-import ordertrackerweb.auth.htmx.AuthEndpoints
+import zio.http.HttpApp
 
 class Endpoints(
     metricsEndpoint: MetricsEndpoints,
-    userEndpoints: UserEndpoints,
-    authEndpoints: AuthEndpoints,
     userApiEndpoints: UserApiEndpoints,
     authApiEndpoints: AuthApiEndpoints
 ):
-  private val uiEndpoints =
-    userEndpoints.endpoints ++ authEndpoints.endpoints
-
   private val apiEndpoints =
     userApiEndpoints.endpoints ++ authApiEndpoints.endpoints
 
@@ -31,21 +26,22 @@ class Endpoints(
     SwaggerInterpreter()
       .fromServerEndpoints[Task](apiEndpoints, "order-tracking-system", "0.0.1")
 
-  val endpoints: List[ZServerEndpoint[Any, Any]] =
-    apiEndpoints ++ uiEndpoints ++ metricsEndpoint.endpoints ++ docsEndpoints(
+  private val endpoints: List[ZServerEndpoint[Any, Any]] =
+    apiEndpoints ++ metricsEndpoint.endpoints ++ docsEndpoints(
       apiEndpoints
     )
 
-  val options: ZioHttpServerOptions[Any] =
+  private val options: ZioHttpServerOptions[Any] =
     ZioHttpServerOptions.customiseInterceptors
       .metricsInterceptor(metricsEndpoint.metricsInterceptor)
       .options
 
+  val httpApp: HttpApp[Any] = ZioHttpInterpreter(options).toHttp(endpoints)
+
 object Endpoints:
   val live: ZLayer[
-    UserEndpoints & MetricsEndpoints & AuthEndpoints & UserApiEndpoints &
-      AuthApiEndpoints,
+    MetricsEndpoints & UserApiEndpoints & AuthApiEndpoints,
     Nothing,
     Endpoints
   ] =
-    ZLayer.fromFunction(new Endpoints(_, _, _, _, _))
+    ZLayer.fromFunction(new Endpoints(_, _, _))
